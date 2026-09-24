@@ -1,0 +1,4 @@
+third_party/cairo-*
+third_party/pixman-*
+Dockerfile
+bin
