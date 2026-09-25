@@ -117,3 +117,22 @@ clean:
 -include $(DEPS)
 
 MKDIR_P ?= mkdir -p
+
+IMAGE ?= toost:latest
+CONTAINER ?= toost
+PORT ?= 8080
+
+# build the deployment image (wasi-sdk compile + wasm-opt inside Docker)
+.PHONY: docker-build
+docker-build:
+	docker build -t $(IMAGE) .
+
+# rebuild the image and recreate the container with the same run options
+.PHONY: docker-deploy
+docker-deploy: docker-build
+	docker rm -f $(CONTAINER) >/dev/null 2>&1 || true
+	docker run -d --name $(CONTAINER) -p $(PORT):8080 $(IMAGE)
+
+.PHONY: docker-down
+docker-down:
+	docker rm -f $(CONTAINER) >/dev/null 2>&1 || true

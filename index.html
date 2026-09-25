@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-	<title>Toost | Super Mario Maker 2 Level Viewer</title>
+	<title>Toost-rev | Super Mario Maker 2 Level Viewer</title>
 	<style>
 		* {
 			box-sizing: border-box;
@@ -568,11 +568,12 @@
 	<div id="loading">Loading...</div>
 	<div id="layout">
 		<div id="topbar">
-			<h1>Toost</h1>
+			<h1>Toost-rev</h1>
 			<button id="loadBtn" disabled title="Load a local level file">📁 Load</button>
 			<input type="file" id="fileInput" style="display: none">
 			<input type="text" id="levelId" maxlength="14" placeholder="Level ID" autocomplete="off">
 			<button id="downloadBtn" disabled>Download</button>
+			<button id="saveLevelBtn" disabled title="Download the raw level data file for this ID">⬇</button>
 
 			<span class="sep"></span>
 			<select id="randomSource" title="Random pool">
@@ -1440,6 +1441,7 @@
 		function enableControls() {
 			$('loadBtn').disabled = false;
 			$('downloadBtn').disabled = false;
+			$('saveLevelBtn').disabled = false;
 			$('randomBtn').disabled = false;
 			$('liveHotBtn').disabled = false;
 			$('liveListBtn').disabled = false;
@@ -1479,6 +1481,23 @@
 		}
 		$('downloadBtn').onclick = downloadLevel;
 		$('levelId').addEventListener('keydown', (e) => { if (e.key === 'Enter') downloadLevel(); });
+
+		// saves the API's level_data bytes as-is, without rendering the level
+		async function saveLevelData() {
+			const raw = $('levelId').value.trim().replace(/[- ]/g, '').toUpperCase();
+			if (!/^[0-9BCDFGHJKLMNPQRSTVWXY]{9}$/.test(raw)) {
+				$('info').innerHTML = `<div class='error'>Level ID ${raw || '(empty)'} is not of the right format</div>`;
+				return;
+			}
+			try {
+				const r = await fetch(`https://tgrcode.com/mm2/level_data/${raw}`);
+				if (!r.ok) throw new Error('HTTP ' + r.status);
+				downloadBlob(await r.blob(), raw + '.bcd');
+			} catch (err) {
+				$('info').innerHTML = `<div class='error'>Could not download level data ${raw}: ${err.message}</div>`;
+			}
+		}
+		$('saveLevelBtn').onclick = saveLevelData;
 
 		async function randomLevel() {
 			$('randomBtn').disabled = true;
