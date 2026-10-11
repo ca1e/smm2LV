@@ -121,8 +121,14 @@ MKDIR_P ?= mkdir -p
 IMAGE ?= toost:latest
 CONTAINER ?= toost
 PORT ?= 8080
+DIST_DIR ?= dist
 
-# build the deployment image (wasi-sdk compile + wasm-opt inside Docker)
+# compile the wasm artifacts into dist/ (wasi-sdk compile + wasm-opt inside Docker)
+.PHONY: dist
+dist:
+	docker build -f Dockerfile.build --output type=local,dest=$(DIST_DIR) .
+
+# build the deployment image from the artifacts in dist/
 .PHONY: docker-build
 docker-build:
 	docker build -t $(IMAGE) .

@@ -1,4 +1,5 @@
+.git
 third_party/cairo-*
 third_party/pixman-*
-Dockerfile
+Dockerfile*
 bin

@@ -94,12 +94,18 @@ toost.wasm(wasi-sdk clang,wasm32-wasip1,reactor 模式)
 
 ## 构建与运行
 
-Docker(推荐,多阶段构建:wasi-sdk → binaryen → busybox httpd):
+Docker 分两个文件,产物编译与部署镜像相互独立:
+
+- `Dockerfile.build`:在容器内编译产物(wasi-sdk → binaryen → brotli),导出到 `dist/`;
+- `Dockerfile`:把 `dist/` 产物连同 `index.html`、`img/` 打包为 busybox httpd 部署镜像。
 
 ```
-docker build --tag toost .
+make dist                    # 编译 wasm 产物到 dist/(源码更新后重新执行)
+docker build --tag toost .   # 用 dist/ 构建部署镜像
 docker run -p 8080:8080 toost
 ```
+
+`dist/` 产物随仓库分发,部署机克隆后直接 `docker build` 即可,无需 wasi-sdk/emsdk。
 
 本地构建需要 [wasi-sdk](https://github.com/WebAssembly/wasi-sdk) 在 PATH
 中(官方镜像挂载于 `/opt/wasi-sdk`):
